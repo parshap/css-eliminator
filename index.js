@@ -43,8 +43,16 @@ module.exports = function(css, html) {
 	function isDead(rule) {
 		return rule.selectors.every(function(selector) {
 			selector = stripPseudos(selector);
-			// Return true if this selector was not used
-			return ! doc.querySelector(selector);
+
+			try {
+				// Return true if this selector did not match
+				return ! doc.querySelector(selector);
+			}
+			catch (e) {
+				// If the selector was not valid or there was another error
+				// assume the selector is not dead
+				return false;
+			}
 		});
 	}
 };
