@@ -1,6 +1,6 @@
 {
   "name": "css-eliminator",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "CSS dead code elimination",
   "main": "index.js",
   "scripts": {
