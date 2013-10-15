@@ -34,8 +34,8 @@ module.exports = function(css, html) {
 
 	// Convert a line number and column position to index in css string
 	function positionToIndex(position) {
-		return lines.slice(position.line).reduce(function(acc, line) {
-			return acc + line.length;
+		return lines.slice(0, position.line - 1).reduce(function(acc, line) {
+			return acc + line.length + 1;
 		}, 0) + position.column - 1;
 	}
 
