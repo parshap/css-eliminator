@@ -45,6 +45,12 @@ matches the original except with any dead rules removed.
  * Some pseudo classes should be considered (e.g., :nth-child())
  * Solution for non-static DOMs and multi-page sites
  * Command line interface (binary)
+ * Remove unused keyframe definitions
+ * Remove empty rules
+ * Remove empty `@media` blocks
+ * Remove duplicate property declarations
+ * Investigate an approach using `getComputedStyle()` to include only
+   declarations that actually result in a computed style
 
 # Installation 
 
