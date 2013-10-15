@@ -25,7 +25,8 @@
   },
   "dependencies": {
     "css-parse": "~1.5.3",
-    "jsdom": "~0.8.6"
+    "jsdom": "~0.8.6",
+    "slick": "~1.10.3"
   },
   "devDependencies": {
     "tape": "~2.0.0"
