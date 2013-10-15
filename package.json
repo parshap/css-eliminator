@@ -1,0 +1,33 @@
+{
+  "name": "css-eliminator",
+  "version": "0.0.0",
+  "description": "CSS dead code elimination",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:parshap/css-eliminator.git"
+  },
+  "keywords": [
+    "css",
+    "remove",
+    "reduce",
+    "optimize",
+    "unused",
+    "dead code elimination"
+  ],
+  "author": "Parsha Pourkhomami",
+  "license": "Public Domain",
+  "bugs": {
+    "url": "https://github.com/parshap/css-eliminator/issues"
+  },
+  "dependencies": {
+    "css-parse": "~1.5.3",
+    "jsdom": "~0.8.6"
+  },
+  "devDependencies": {
+    "tape": "~2.0.0"
+  }
+}
