@@ -1,3 +1,6 @@
+// jshint node:true
+"use strict";
+
 var test = require("tape");
 var eliminate = require("./");
 
@@ -24,5 +27,28 @@ test("pseudo selector", function(t) {
 	var CSS = "a:hover { color: red }",
 		HTML = "<html><a></a></html>";
 	t.equal(eliminate(CSS, HTML), CSS);
+	t.end();
+});
+
+test("multiline", function(t) {
+	var HTML = "<html><a></a></html>";
+
+	var CSS =
+		"a { color: red }\n" +
+		"a:hover {\n" +
+		"  font-weight: bolder;\n" +
+		"}\n" +
+		"b { color: blue; }\n" +
+		"a.foo { color: pink }\n";
+
+	var EXPECTED_CSS =
+		"a { color: red }\n" +
+		"a:hover {\n" +
+		"  font-weight: bolder;\n" +
+		"}\n" +
+		"\n" +
+		"\n";
+
+	t.equal(eliminate(CSS, HTML), EXPECTED_CSS);
 	t.end();
 });
