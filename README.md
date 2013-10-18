@@ -51,6 +51,7 @@ matches the original except with any dead rules removed.
  * Remove duplicate property declarations
  * Investigate an approach using `getComputedStyle()` to include only
    declarations that actually result in a computed style
+ * Bug with ".wrapper ::selection {}" if .wrapper has only text nodes
 
 # Installation 
 
