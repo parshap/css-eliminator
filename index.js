@@ -7,6 +7,7 @@ var parse = require("css-parse"),
 var JSDOM_OPTIONS = {
 	features: {
 		FetchExternalResources: false,
+		ProcessExternalResources: false,
 	},
 };
 
