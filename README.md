@@ -52,6 +52,8 @@ matches the original except with any dead rules removed.
  * Investigate an approach using `getComputedStyle()` to include only
    declarations that actually result in a computed style
  * Bug with ".wrapper ::selection {}" if .wrapper has only text nodes
+ * Operate on css AST instead of string
+ * Remove individual dead selectors
 
 # Installation 
 
