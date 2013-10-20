@@ -1,8 +1,7 @@
 // jshint node:true
 "use strict";
 
-var parse = require("css-parse"),
-	jsdom = require("jsdom").jsdom;
+var jsdom = require("jsdom").jsdom;
 
 var JSDOM_OPTIONS = {
 	features: {
@@ -11,52 +10,56 @@ var JSDOM_OPTIONS = {
 	},
 };
 
-module.exports = function(css, html) {
-	var ast = parse(css, { position: true });
-	var doc = jsdom(html, null, JSDOM_OPTIONS);
-	var rules = getRules(ast.stylesheet);
-	var dead = rules.filter(isDead);
-	var lines = css.split("\n");
+module.exports = function(ast, html) {
+	var document = jsdom(html, null, JSDOM_OPTIONS),
+		isNotDead = detector(document);
+	ast.stylesheet.rules = filterRules(ast.stylesheet.rules, isNotDead);
+	return ast;
+};
 
-	// Copy css string into retval string except for parts owned by dead rules
-	var cur = 0;
-	var retval = "";
-	dead.forEach(function(rule) {
-		var start = positionToIndex(rule.position.start),
-			end = positionToIndex(rule.position.end);
-		retval += css.slice(cur, start);
-		cur = end;
-	});
-
-	// Copy any remaining css after last dead rule
-	retval += css.slice(cur);
-
-	return retval;
-
-	// Convert a line number and column position to index in css string
-	function positionToIndex(position) {
-		return lines.slice(0, position.line - 1).reduce(function(acc, line) {
-			return acc + line.length + 1;
-		}, 0) + position.column - 1;
-	}
+// Create a function that detects if a given rule is dead or not
+function detector(document) {
+	var failedSelectorCache = [];
 
 	// Return true if rule's selectors were not used
-	function isDead(rule) {
-		return rule.selectors.every(function(selector) {
+	return function isNotDead(rule) {
+		return rule.selectors.some(function(selector) {
 			selector = stripPseudos(selector);
 
-			try {
-				// Return true if this selector did not match
-				return ! doc.querySelector(selector);
-			}
-			catch (e) {
-				// If the selector was not valid or there was another error
-				// assume the selector is not dead
+			if (isInCache(selector)) {
 				return false;
 			}
+
+			if ( ! isInDocument(selector)) {
+				failedSelectorCache.push(selector);
+				return false;
+			}
+
+			return true;
+		});
+	};
+
+	function isInDocument(selector) {
+		try {
+			// Return true if this selector matched
+			return document.querySelector(selector);
+		}
+		catch (e) {
+			// If the selector was not valid or there was another error
+			// assume the selector is not dead
+		}
+	}
+
+	function isInCache(selector) {
+		return failedSelectorCache.some(function(failedSelector) {
+			return startsWith(selector, failedSelector + " ");
 		});
 	}
-};
+}
+
+function startsWith(str, prefix) {
+	return str.slice(0, prefix.length) === prefix;
+}
 
 // Remove any pseudo classes or elements from the selector
 // @TODO We may want to keep some pseudo classes (e.g., :nth-child())
@@ -75,24 +78,18 @@ var stripPseudos = (function() {
 	};
 })();
 
-// Flatten all "rule" objects in AST into array
-function getRules(ast) {
-	var rules = [];
-	walkAST(ast, function(ast) {
-		if (ast.type === "rule") {
-			rules.push(ast);
+
+function filterRules(rules, fn) {
+	return rules.filter(function(rule) {
+		var filtered = isRealRule(rule) && ! fn(rule);
+		if (rule.rules) {
+			rule.rules = filterRules(rule.rules, fn);
 		}
+		return ! filtered;
 	});
-	return rules;
 }
 
-// Recursively walk all AST nodes
-function walkAST(ast, fn) {
-	fn(ast);
-
-	if (ast.rules) {
-		ast.rules.forEach(function(ast) {
-			walkAST(ast, fn);
-		});
-	}
+function isRealRule(rule) {
+	return rule.type === "rule" &&
+		! (rule.selectors.length === 1 && rule.selectors[0][0] === "@");
 }
