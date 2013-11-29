@@ -25,23 +25,11 @@ function parseDOM(html) {
 
 // Create a function that detects if a given rule is dead or not
 function detector(dom) {
-	var failedSelectorCache = [];
-
-	// Return true if rule's selectors were not used
 	return function isNotDead(rule) {
+		// Return true if rule's selectors were not used
 		return rule.selectors.some(function(selector) {
 			selector = stripPseudos(selector);
-
-			if (isInCache(selector)) {
-				return false;
-			}
-
-			if ( ! isInDocument(selector)) {
-				failedSelectorCache.push(selector);
-				return false;
-			}
-
-			return true;
+			return isInDocument(selector);
 		});
 	};
 
@@ -55,16 +43,6 @@ function detector(dom) {
 			// assume the selector is not dead
 		}
 	}
-
-	function isInCache(selector) {
-		return failedSelectorCache.some(function(failedSelector) {
-			return startsWith(selector, failedSelector + " ");
-		});
-	}
-}
-
-function startsWith(str, prefix) {
-	return str.slice(0, prefix.length) === prefix;
 }
 
 // Remove any pseudo classes or elements from the selector
