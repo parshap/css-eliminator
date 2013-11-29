@@ -4,7 +4,8 @@
   "description": "CSS dead code elimination",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "bench": "node bench"
   },
   "repository": {
     "type": "git",
