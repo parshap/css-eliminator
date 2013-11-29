@@ -1,24 +1,30 @@
 // jshint node:true
 "use strict";
 
-var jsdom = require("jsdom").jsdom;
-
-var JSDOM_OPTIONS = {
-	features: {
-		FetchExternalResources: false,
-		ProcessExternalResources: false,
-	},
-};
+var htmlparser = require("htmlparser2"),
+	select = require("CSSselect").selectOne;
 
 module.exports = function(ast, html) {
-	var document = jsdom(html, null, JSDOM_OPTIONS),
-		isNotDead = detector(document);
+	var dom = parseDOM(html),
+		isNotDead = detector(dom);
 	ast.stylesheet.rules = filterRules(ast.stylesheet.rules, isNotDead);
 	return ast;
 };
 
+function parseDOM(html) {
+	var dom, err;
+	var parser = new htmlparser.Parser(new htmlparser.DomHandler(function(err2, dom2) {
+		err = err2;
+		dom = dom2;
+	}));
+	parser.write(html);
+	parser.done();
+	if (err) throw err;
+	return dom;
+}
+
 // Create a function that detects if a given rule is dead or not
-function detector(document) {
+function detector(dom) {
 	var failedSelectorCache = [];
 
 	// Return true if rule's selectors were not used
@@ -42,7 +48,7 @@ function detector(document) {
 	function isInDocument(selector) {
 		try {
 			// Return true if this selector matched
-			return document.querySelector(selector);
+			return select(selector, dom);
 		}
 		catch (e) {
 			// If the selector was not valid or there was another error

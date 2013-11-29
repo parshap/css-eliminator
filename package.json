@@ -25,8 +25,9 @@
     "url": "https://github.com/parshap/css-eliminator/issues"
   },
   "dependencies": {
-    "jsdom": "~0.8.8",
-    "slick": "~1.10.3"
+    "slick": "~1.10.3",
+    "htmlparser2": "~3.3.0",
+    "CSSselect": "~0.3.11"
   },
   "devDependencies": {
     "tape": "~2.0.0",
