@@ -24,7 +24,7 @@
     "url": "https://github.com/parshap/css-eliminator/issues"
   },
   "dependencies": {
-    "jsdom": "~0.8.6",
+    "jsdom": "~0.8.8",
     "slick": "~1.10.3"
   },
   "devDependencies": {
