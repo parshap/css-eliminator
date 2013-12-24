@@ -1,6 +1,13 @@
-var eliminate = require("./");
-// Remove unused rule for "a.foo" elements
-console.log(eliminate(
-	"p { color: red } a.foo { color: blue }",
-	"<html><body><p>Hello World</p></body></html>"
-));
+var eliminator = require("./");
+var parse = require("css-parse");
+var stringify = require("css-stringify");
+var fs = require("fs");
+
+var css = "p { color: red } a { color: blue }";
+var html = "<html><body><p>Hello World</p></body></html>";
+
+var ast = parse(css);
+var eliminate = eliminator(html);
+
+ast = eliminate(ast);
+console.log(stringify(ast));

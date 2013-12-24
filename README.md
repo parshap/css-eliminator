@@ -1,60 +1,86 @@
 # css-eliminator
 
-Remove unused CSS rules. This module works by analyzing rules found in a
-stylesheet against a **static DOM** and eliminating any rules where no
-elements in the DOM match the rule's selector.
+Walk all rules of a style sheet and remove what is not being used.
+
+## Example
+
+Given an HTML document `hello.html`:
+```html
+<html>
+	<body>
+		<p>Hello World</p>
+	</body>
+</html>
+```
+
+And some styles `styles.css`:
+```css
+p {
+	color: red;
+}
+
+a {
+	color: blue;
+}
+```
+
+We can eliminate parts of the styles that are not present in the
+document.
+
+```js
+var eliminator = require("css-eliminator");
+var parse = require("css-parse");
+var stringify = require("css-stringify");
+var fs = require("fs");
+
+var css = fs.readFileSync("styles.css");
+var html = fs.readFileSync("hello.html");
+var ast = parse(css);
+var eliminate = eliminator(html);
+
+ast = eliminate(ast);
+console.log(stringify(ast));
+```
+
+Alternatively, you can use this as a *[Rework][]* plugin.
+
+[rework]: https://github.com/visionmedia/rework
 
 ## Dead Rules
 
-This module only removes parts of the CSS that belong to a dead rule. A
+This module determines if each rule in a style sheet is *dead* or not. A
 rule is considered dead if no elements exist in the given HTML document
-that match the rule's selector. Everything else is left alone (even
-whitespace between unused rules). This is to make sure we only remove
-what we are certain is not used.
+that match the rule's selector.
 
-## Pseudo Elements and Pseudo Classes
+### Pseudo Elements and Pseudo Classes
 
 Any pseudo parts of a selector (e.g., `::after` in `div::after`) are
 stripped from the selector before determining if any elements match.
 This is so that selectors like `a.btn:hover` will remain as long as an
 element matching `a.btn` exists.
 
-# Example
+## API
 
-```js
-var eliminate = require("css-eliminator");
-// Remove unused "a.foo { ... }" rule, leaving only "p { .. }" rule
-console.log(eliminate(
-	"p { color: red } a.foo { color: blue }",
-	"<html><body><p>Hello World</p></body></html>"
-});
-```
-```
-p { color: red }
-```
-
-# API
-
-## `eliminate(css, html)`
+### `eliminate(css, html)`
 
 Given a CSS document and HTML document return a new CSS document that
 matches the original except with any dead rules removed.
 
-# Todos
+## Todos
 
  * Some pseudo classes should be considered (e.g., :nth-child())
  * Solution for non-static DOMs and multi-page sites
- * Command line interface (binary)
  * Remove unused keyframe definitions
- * Remove empty rules
  * Remove empty `@media` blocks
  * Remove duplicate property declarations
- * Investigate an approach using `getComputedStyle()` to include only
-   declarations that actually result in a computed style
  * Bug with ".wrapper ::selection {}" if .wrapper has only text nodes
- * Remove individual dead selectors
 
-# Installation 
+### Alternate Approache
+
+Another approach would be to walk the DOM and use something like
+`getComputedStyle()` to determine which styles actually affect the DOM.
+
+## Installation 
 
 ```
 npm install css-eliminator

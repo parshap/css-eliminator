@@ -4,33 +4,49 @@
 var htmlparser = require("htmlparser2"),
 	select = require("CSSselect").selectOne;
 
-module.exports = function(ast, html) {
+module.exports = function(html) {
+	// Parse the html dom and create an eliminate function that will alter an
+	// ast rule node to eliminate dead code
 	var dom = parseDOM(html),
-		isNotDead = detector(dom);
-	ast.stylesheet.rules = filterRules(ast.stylesheet.rules, isNotDead);
-	return ast;
+		eliminate = eliminator(dom);
+
+	return function(style) {
+		walkRules(style.stylesheet, eliminate);
+		return style;
+	};
 };
 
+// Sync htmlparser parsing
 function parseDOM(html) {
+	// Since we already have html string and are going to call parser.done()
+	// in a sync manner, we can just turn the parsing into a sync call.
 	var dom, err;
-	var parser = new htmlparser.Parser(new htmlparser.DomHandler(function(err2, dom2) {
-		err = err2;
-		dom = dom2;
-	}));
+	var parser = new htmlparser.Parser(
+		new htmlparser.DomHandler(function(err2, dom2) {
+			// This function will be called on
+			err = err2;
+			dom = dom2;
+		})
+	);
 	parser.write(html);
 	parser.done();
 	if (err) throw err;
 	return dom;
 }
 
-// Create a function that detects if a given rule is dead or not
-function detector(dom) {
-	return function isNotDead(rule) {
-		// Return true if rule's selectors were not used
-		return rule.selectors.some(function(selector) {
+// Create a function that will eliminate dead code from rules
+function eliminator(dom) {
+	return function(rule) {
+		// Remove any selectors that don't appear in the document
+		rule.selectors = rule.selectors.filter(function(selector) {
 			selector = stripPseudos(selector);
 			return isInDocument(selector);
 		});
+
+		// Remove declarations if there are no selectors
+		if (rule.selectors.length === 0) {
+			rule.declarations = [];
+		}
 	};
 
 	function isInDocument(selector) {
@@ -62,18 +78,22 @@ var stripPseudos = (function() {
 	};
 })();
 
+// ## Walk Rules
+// Walk all rule nodes in the given css ast, calling a function for each rule
+// node
 
-function filterRules(rules, fn) {
-	return rules.filter(function(rule) {
-		var filtered = isRealRule(rule) && ! fn(rule);
-		if (rule.rules) {
-			rule.rules = filterRules(rule.rules, fn);
+var walk = require("rework-walk");
+
+function walkRules(node, fn) {
+	walk(node, function(node) {
+		if (isRealRule(node)) {
+			fn(node);
 		}
-		return ! filtered;
 	});
 }
 
-function isRealRule(rule) {
-	return rule.type === "rule" &&
-		! (rule.selectors.length === 1 && rule.selectors[0][0] === "@");
+// Make sure the node is a rule and not a media query
+function isRealRule(node) {
+	return node.type === "rule" &&
+		! (node.selectors.length === 1 && node.selectors[0][0] === "@");
 }
