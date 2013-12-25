@@ -4,11 +4,10 @@
 var htmlparser = require("htmlparser2"),
 	select = require("CSSselect").selectOne;
 
-module.exports = function(html) {
-	// Parse the html dom and create an eliminate function that will alter an
-	// ast rule node to eliminate dead code
-	var dom = parseDOM(html),
-		eliminate = eliminator(dom);
+module.exports = function(html, options) {
+	// Create an eliminate function that will alter an AST rule node to
+	// eliminate dead code
+	var eliminate = eliminator(html, options);
 
 	return function(style) {
 		walkRules(style.stylesheet, eliminate);
@@ -16,7 +15,40 @@ module.exports = function(html) {
 	};
 };
 
-// Sync htmlparser parsing
+// Create a function that will eliminate dead code from rules
+function eliminator(html, options) {
+	var dom = parseDOM(html);
+
+	return function(rule) {
+		// Remove any selectors that don't appear in the document
+		rule.selectors = rule.selectors.filter(function(selector) {
+			return filter(selector) || isInDocument(selector);
+		});
+
+		// Remove declarations if there are no selectors
+		if (rule.selectors.length === 0) {
+			rule.declarations = [];
+		}
+	};
+
+	function filter(selector) {
+		return options && options.filter && options.filter(selector);
+	}
+
+	function isInDocument(selector) {
+		selector = stripPseudos(selector);
+		try {
+			// Return true if this selector matched
+			return select(selector, dom);
+		}
+		catch (e) {
+			// If the selector was not valid or there was another error
+			// assume the selector is not dead
+		}
+	}
+}
+
+// Sync htmlparser parser
 function parseDOM(html) {
 	// Since we already have html string and are going to call parser.done()
 	// in a sync manner, we can just turn the parsing into a sync call.
@@ -32,33 +64,6 @@ function parseDOM(html) {
 	parser.done();
 	if (err) throw err;
 	return dom;
-}
-
-// Create a function that will eliminate dead code from rules
-function eliminator(dom) {
-	return function(rule) {
-		// Remove any selectors that don't appear in the document
-		rule.selectors = rule.selectors.filter(function(selector) {
-			selector = stripPseudos(selector);
-			return isInDocument(selector);
-		});
-
-		// Remove declarations if there are no selectors
-		if (rule.selectors.length === 0) {
-			rule.declarations = [];
-		}
-	};
-
-	function isInDocument(selector) {
-		try {
-			// Return true if this selector matched
-			return select(selector, dom);
-		}
-		catch (e) {
-			// If the selector was not valid or there was another error
-			// assume the selector is not dead
-		}
-	}
 }
 
 // Remove any pseudo classes or elements from the selector

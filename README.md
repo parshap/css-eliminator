@@ -64,15 +64,40 @@ stripped from the selector before determining if any elements match.
 This is so that selectors like `a.btn:hover` will remain as long as an
 element matching `a.btn` exists.
 
+### Selector Filtering
+
+To white-list, black-list, or otherwise filter which rule selectors are
+dropped, `options.filter` can be a function that will be called for each
+selector. If the function returns true, the selector will **not be**
+dropped and the rule will be left intact.
+
+For example, if your appliation dynamically adds `.user-profile` divs to
+the page, you can keep all selectors containing `.user-profile`:
+
+```js
+var eliminate = eliminator(html, {
+	filter: function(selector) {
+		return /\.user-profile/.test(selector);
+	},
+});
+```
+
+You can use a selector parser like *[slick][]* for powerful
+arbitrary selector filtering.
+
 ## API
 
 The API operates on HTML as strings, and CSS as ASTs produced by
 *[css-parse][]*.
 
-### `eliminator(html)`
+### `eliminator(html, options)`
 
 Create an `eliminate(ast)` function that will operate on CSS ASTs with
 the given HTML document as context.
+
+Options:
+
+ * `options.filter`: A function to control which selectors are removed.
 
 ### `eliminate(ast)`
 
@@ -81,7 +106,7 @@ Remove any dead code in the given CSS AST and return the AST.
 ## Todos
 
  * Some pseudo classes should be considered (e.g., :nth-child())
- * Solution for non-static DOMs and multi-page sites
+ * Allow multiple DOM inputs
  * Remove unused keyframe definitions
  * Remove empty `@media` blocks and other at-rules
  * Remove unused animation keyframe declarations
@@ -101,3 +126,4 @@ npm install css-eliminator
 
 [rework]: https://github.com/visionmedia/rework
 [css-parse]: https://github.com/visionmedia/css-parse
+[slick]: https://github.com/kamicane/slick

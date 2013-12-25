@@ -6,8 +6,8 @@ var parse = require("css-parse");
 var stringify = require("css-stringify");
 var eliminator = require("./");
 
-function e(css, html) {
-	var eliminate = eliminator(html);
+function e(css, html, options) {
+	var eliminate = eliminator(html, options);
 	return stringify(eliminate(parse(css)), { compress: true });
 }
 
@@ -70,4 +70,17 @@ test("multiline", function(t) {
 
 	t.equal(e(CSS, HTML), EXPECTED_CSS);
 	t.end();
+});
+
+test("filter function", function(t) {
+	var CSS = "a{color:red;} b{color: green;} c{color: blue;}",
+		HTML = "<html><a></a></html>",
+		CSS_EXPECTED = "a{color:red;}b{color:green;}";
+	var options = { filter: filter };
+	t.equal(e(CSS, HTML, options), CSS_EXPECTED);
+	t.end();
+
+	function filter(selector) {
+		return selector === "b";
+	}
 });
