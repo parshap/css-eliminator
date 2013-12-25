@@ -1,6 +1,6 @@
 # css-eliminator
 
-Walk all rules of a style sheet and remove what is not being used.
+Walk rules of a style sheet and remove unused code.
 
 ## Example
 
@@ -24,8 +24,8 @@ a {
 }
 ```
 
-We can eliminate parts of the styles that are not present in the
-document.
+We can eliminate parts of the styles that will not affect the DOM
+(`example.js`):
 
 ```js
 var eliminator = require("css-eliminator");
@@ -42,11 +42,16 @@ ast = eliminate(ast);
 console.log(stringify(ast));
 ```
 
-Alternatively, you can use this as a *[Rework][]* plugin.
+```
+$ node example.js
+p {
+  color: red;
+}
+```
 
-[rework]: https://github.com/visionmedia/rework
+Alternatively, you can use *css-eliminator* as a *[Rework][]* plugin.
 
-## Dead Rules
+## How It Works
 
 This module determines if each rule in a style sheet is *dead* or not. A
 rule is considered dead if no elements exist in the given HTML document
@@ -61,18 +66,26 @@ element matching `a.btn` exists.
 
 ## API
 
-### `eliminate(css, html)`
+The API operates on HTML as strings, and CSS as ASTs produced by
+*[css-parse][]*.
 
-Given a CSS document and HTML document return a new CSS document that
-matches the original except with any dead rules removed.
+### `eliminator(html)`
+
+Create an `eliminate(ast)` function that will operate on CSS ASTs with
+the given HTML document as context.
+
+### `eliminate(ast)`
+
+Remove any dead code in the given CSS AST and return the AST.
 
 ## Todos
 
  * Some pseudo classes should be considered (e.g., :nth-child())
  * Solution for non-static DOMs and multi-page sites
  * Remove unused keyframe definitions
- * Remove empty `@media` blocks
- * Remove duplicate property declarations
+ * Remove empty `@media` blocks and other at-rules
+ * Remove unused animation keyframe declarations
+ * Remove duplicate property declarations across multiple rules
  * Bug with ".wrapper ::selection {}" if .wrapper has only text nodes
 
 ### Alternate Approache
@@ -85,3 +98,6 @@ Another approach would be to walk the DOM and use something like
 ```
 npm install css-eliminator
 ```
+
+[rework]: https://github.com/visionmedia/rework
+[css-parse]: https://github.com/visionmedia/css-parse
