@@ -5,9 +5,7 @@ var fs = require("fs");
 
 var css = "p { color: red } a { color: blue }";
 var html = "<html><body><p>Hello World</p></body></html>";
-
-var ast = parse(css);
 var eliminate = eliminator(html);
 
-ast = eliminate(ast);
+var ast = eliminate(parse(css))
 console.log(stringify(ast));

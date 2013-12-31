@@ -35,10 +35,9 @@ var fs = require("fs");
 
 var css = fs.readFileSync("styles.css");
 var html = fs.readFileSync("hello.html");
-var ast = parse(css);
 var eliminate = eliminator(html);
 
-ast = eliminate(ast);
+var ast = eliminate(parse(css))
 console.log(stringify(ast));
 ```
 
@@ -113,7 +112,7 @@ Remove any dead code in the given CSS AST and return the AST.
  * Remove duplicate property declarations across multiple rules
  * Bug with ".wrapper ::selection {}" if .wrapper has only text nodes
 
-### Alternate Approache
+### Alternate Approach
 
 Another approach would be to walk the DOM and use something like
 `getComputedStyle()` to determine which styles actually affect the DOM.
