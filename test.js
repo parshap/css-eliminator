@@ -2,8 +2,8 @@
 "use strict";
 
 var test = require("tape");
-var parse = require("css-parse");
-var stringify = require("css-stringify");
+var parse = require("css").parse;
+var stringify = require("css").stringify;
 var eliminator = require("./");
 
 function e(css, html, options) {
